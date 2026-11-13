@@ -1,0 +1,68 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+
+version = '1.0.0'
+group = 'com.voidrecorder'
+archivesBaseName = 'voidrecorder'
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+minecraft {
+    mappings channel: 'official', version: '1.16.5'
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                voidrecorder {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+configurations {
+    embed
+    implementation.extendsFrom embed
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.16.5-36.2.42'
+    // Pure-Java H.264 + MP4 (no AWT, no native libs). Embedded into the mod JAR.
+    embed 'org.jcodec:jcodec:0.2.5'
+}
+
+jar {
+    from {
+        configurations.embed.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    manifest {
+        attributes([
+            'Specification-Title'   : 'voidrecorder',
+            'Specification-Vendor'  : 'VoidRecorder',
+            'Specification-Version' : '1',
+            'Implementation-Title'  : project.name,
+            'Implementation-Version': project.version,
+            'Implementation-Vendor' : 'VoidRecorder'
+        ])
+    }
+}
+
+jar.finalizedBy('reobfJar')
